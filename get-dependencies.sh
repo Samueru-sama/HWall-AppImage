@@ -6,7 +6,7 @@ ARCH=$(uname -m)
 
 echo "Installing package dependencies..."
 echo "---------------------------------------------------------------"
-# pacman -Syu --noconfirm PACKAGESHERE
+pacman -Syu --noconfirm rust
 
 echo "Installing debloated packages..."
 echo "---------------------------------------------------------------"
@@ -16,11 +16,15 @@ get-debloated-pkgs --add-common --prefer-nano
 #make-aur-package PACKAGENAME
 
 # If the application needs to be manually built that has to be done down here
+echo "Building HWall..."
+echo "---------------------------------------------------------------"
+git clone https://github.com/pulpul-s/HWall ./hwall && (
+	cd ./hwall
 
-# if you also have to make nightly releases check for DEVEL_RELEASE = 1
-#
-# if [ "${DEVEL_RELEASE-}" = 1 ]; then
-# 	nightly build steps
-# else
-# 	regular build steps
-# fi
+	git fetch --tags origin
+	TAG=$(git tag --sort=-v:refname | grep -vi 'rc\|alpha\|beta' | head -1)
+	git checkout "$TAG"
+
+	make install-gui PREFIX=/usr
+	echo "$TAG" > ~/version
+)
